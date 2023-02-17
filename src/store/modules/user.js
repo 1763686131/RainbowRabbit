@@ -29,39 +29,46 @@ const mutations = {
 
 const actions = {
   // user login
-  login({ commit }, userInfo) {
+  async login({ commit }, userInfo) {
+    //结构出用户和密码
     const { username, password } = userInfo
-    return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
-        const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
-        resolve()
-      }).catch(error => {
-        reject(error)
-      })
-    })
+    let res= await login({username: username.trim(), password: password})
+    if(res.code==20000){
+      commit('SET_TOKEN', res.data.token)
+      setToken(res.data.token)
+      return "ok"
+    }else{
+      return Promise.reject(new error('faile'))
+    }
   },
 
   // get user info
-  getInfo({ commit, state }) {
-    return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
-        const { data } = response
+  async getInfo({ commit, state }) {
+    let res= await getInfo(state.token)
+    if (res.code==20000) {
+      const {avatar,introduction,name}=res.data
+      commit('SET_NAME', name)
+      commit('SET_AVATAR', avatar)
+      return 'ok'
+    }else{
+      return Promise.reject(new error('faile'))
+    }
+    
+    // return new Promise((resolve, reject) => {
+    //   getInfo(state.token).then(response => {
+    //     const { data } = response
+    //     if (!data) {
+    //       return reject('Verification failed, please Login again.')
+    //     }
+    //     const { name, avatar } = data
 
-        if (!data) {
-          return reject('Verification failed, please Login again.')
-        }
-
-        const { name, avatar } = data
-
-        commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
-        resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
-    })
+    //     commit('SET_NAME', name)
+    //     commit('SET_AVATAR', avatar)
+    //     resolve(data)
+    //   }).catch(error => {
+    //     reject(error)
+    //   })
+    // })
   },
 
   // user logout
