@@ -8,6 +8,8 @@ import locale from 'element-ui/lib/locale/lang/zh-CN' // lang i18n
 
 import '@/styles/index.scss' // global css
 
+
+
 import App from './App'
 import store from './store'
 import router from './router'
@@ -34,6 +36,11 @@ Vue.use(ElementUI, { locale })
 Vue.use(ElementUI)
 
 Vue.config.productionTip = false
+
+import testing from '@/components/testing'
+Vue.component(testing.name, testing);
+import category3Id from '@/components/category3Id'
+Vue.component(category3Id.name,category3Id)
 
 import API from '@/api'
 Vue.prototype.$API=API

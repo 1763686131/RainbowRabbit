@@ -27,3 +27,13 @@ export const reqbaseTrademarksave=(trademark)=>{
         })
     }
 }
+
+
+//删除按钮  地址： /admin/product/baseTrademark/remove/{id}   请求DELETE  携带参数，商品ID
+
+export const reqremovetrademark=(id)=>{
+    return request({
+        url:`/admin/product/baseTrademark/remove/${id}`,
+        method:'delete',
+    })
+}

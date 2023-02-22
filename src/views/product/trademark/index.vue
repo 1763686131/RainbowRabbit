@@ -27,16 +27,16 @@
         </template>
       </el-table-column>
       <el-table-column prop="prop" label="操作" width="width">
-        <template slot-scope="{ row, $index }">
+        <template slot-scope="{row}">
           <el-button
             type="warning"
             icon="el-icon-edit"
             size="mini"
-            @click="xiugai"
+            @click="xiugai(row)"
             >修改</el-button
           >
           <el-button type="danger" icon="el-icon-delete" size="mini"
-            >删除</el-button
+            @click="deletebut(row)">删除</el-button
           >
         </template>
       </el-table-column>
@@ -58,12 +58,12 @@
     >
     </el-pagination>
     <!-- 对话框 -->
-    <el-dialog title="新增品牌" :visible.sync="dialogFormVisible">
-      <el-form v-model="tmfrom">
-        <el-form-item label="品牌名称" >
-          <el-input autocomplete="off" style="width:80%" v-model="tmfrom.tmName"></el-input>
+    <el-dialog :title="tmfrom.id ? '修改品牌' : '添加品牌'" :visible.sync="dialogFormVisible">
+      <el-form :model="tmfrom" :rules="rules" ref="rules" >
+        <el-form-item label="品牌名称" prop="tmName">
+          <el-input autocomplete="off" style="width:80%" v-model="tmfrom.tmName" ></el-input> 
         </el-form-item>
-        <el-form-item label="品牌logo">
+        <el-form-item label="品牌logo" prop="logoUrl">
             <!-- 这里收集图片不能使用v-model  -->
           <el-upload
             class="avatar-uploader"
@@ -104,16 +104,40 @@ export default {
       dialogFormVisible: false,
       //收集表单信息
       tmfrom:{
-        tmName:'',//对象身上的属性不要瞎写
-        logoUrl:'',
-      }
-    };
+        tmName:"",//对象身上的属性不要瞎写
+        logoUrl:"",
+      },
+      rules:{
+         tmName:[
+          { required: true, message: "请输入品牌名称", trigger: "blur" },
+          { min: 2, max: 10, message: "长度在 2 到 10 个字符", trigger: "change" },
+        ],
+        logoUrl: [
+          { required: true, message: "请上传品牌图片", trigger: "change" },
+        ],
+      },
+      yanze:false
+    }
+  },
+  computed:{
+    //表格验证
+    // ttt(){
+    //   return '请输入活动名称11'
+    // }
   },
   methods: {
+    // yanzheng(){
+    //   if (this.tmfrom.tmName.length < 2 || this.tmfrom.tmName.length > 10 ) {
+    //        this.$message('请输入2-10位字符')
+    //        this.yanze=true
+    //   }else{
+    //        this.yanze=false
+    //   }
+    // },
     //请求数据
-    async getdata() {
+    async getdata(a) {
       const { page, limit } = this;
-      let res = await this.$API.tradeMark.reqbasetrademark(page, limit);
+      let res = await this.$API.tradeMark.reqbasetrademark(a||page, limit);
       if (res.code == 200) {
         const { total, records } = res.data;
         (this.total = total), (this.records = records);
@@ -126,8 +150,32 @@ export default {
       this.tmfrom={tmName:'',logoUrl:''}
     },
     //修改按钮
-    xiugai() {
+    xiugai(value) {
       this.dialogFormVisible = true;
+      this.tmfrom={...value}
+      
+    },
+    //删除按钮
+    deletebut(row){
+        this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(async () => {
+          let res =await this.$API.tradeMark.reqremovetrademark(row.id)
+          if (res.code==200) {
+            this.$message({
+            type: 'success',
+            message: '删除成功!'
+             });
+             this.getdata(this.records.length>1 ? this.page:this.page-1)
+          }
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
     },
     //分页器
     handleCurrentChange(value) {
@@ -139,20 +187,28 @@ export default {
       this.getdata();
     },
     //提交按钮(添加品牌｜｜修改品牌)
-    async addorupdelt(){
-        this.dialogFormVisible=false
-        let res=await this.$API.tradeMark.reqbaseTrademarksave(this.tmfrom)
-        if (res.code==200) {
-            this.$message({message:this.tmfrom.id ?'恭喜你修改成功':'恭喜你添加成功',type:'success'})
-            this.getdata()
-        }
+     addorupdelt(){
+        this.$refs.rules.validate(async (valid)=>{
+          if(valid){
+            this.dialogFormVisible=false
+            let res=await this.$API.tradeMark.reqbaseTrademarksave(this.tmfrom)
+            if (res.code==200) {
+              this.$message({message:this.tmfrom.id ?'恭喜你修改成功':'恭喜你添加成功',type:'success'})
+              this.getdata()
+    }
+   
+          }
+        })
+        
+        
     },
     //上传图片相关的回调
     //图片上传成功
     handleAvatarSuccess(res, file) {
         //res是上传成功后，返回给前端的数据
         //file上传成功后，也是返回前端的数据
-        this.tmfrom.logoUrl= URL.createObjectURL(file.raw);
+        //原数据：this.tmfrom.logoUrl= URL.createObjectURL(file.raw)这个是返回本地的，
+        this.tmfrom.logoUrl=res.data;
       },
       //图片上传之前
       beforeAvatarUpload(file) {
