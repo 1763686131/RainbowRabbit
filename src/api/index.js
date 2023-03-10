@@ -4,9 +4,16 @@ import * as sku from '@/api/product/sku'
 import * as spu from '@/api/product/spu'
 
 
+import * as user from './acl/user'
+import role from './acl/role'
+import permission from './acl/permission'
+
 export default{
     tradeMark,
     attr,
     sku,
-    spu
+    spu,
+    user,
+    role,
+    permission
 }

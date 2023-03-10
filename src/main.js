@@ -25,7 +25,7 @@ import '@/permission' // permission control
  * Currently MockJs will be used in the production environment,
  * please remove it before going online ! ! !
  */
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'development') {
   const { mockXHR } = require('../mock')
   mockXHR()
 }
@@ -41,6 +41,8 @@ import testing from '@/components/testing'
 Vue.component(testing.name, testing);
 import category3Id from '@/components/category3Id'
 Vue.component(category3Id.name,category3Id)
+import HintButton from '@/components/HintButton'
+Vue.component(HintButton.name,HintButton)
 
 import API from '@/api'
 Vue.prototype.$API=API
